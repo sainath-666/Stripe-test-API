@@ -15,8 +15,66 @@ app.use(cors());
 // Actually, let's use express.json() for everything.
 app.use(express.json());
 
+const staticProducts = [
+  {
+    id: "1",
+    name: "Premium Wireless Headphones",
+    price: 1500000, // ₹15,000.00
+    description:
+      "High-quality noise-cancelling headphones for an immersive audio experience.",
+    image:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
+  },
+  {
+    id: "2",
+    name: "Mechanical Gaming Keyboard",
+    price: 850000, // ₹8,500.00
+    description:
+      "RGB mechanical keyboard with tactile switches for ultimate gaming performance.",
+    image:
+      "https://images.unsplash.com/photo-1595225476474-87563907a212?w=800&q=80",
+  },
+  {
+    id: "3",
+    name: "4K Ultra HD Monitor",
+    price: 2500000, // ₹25,000.00
+    description:
+      "Crystal clear 27-inch 4K monitor for professionals and gamers alike.",
+    image:
+      "https://images.unsplash.com/photo-1527443195645-1133f7f28990?w=800&q=80",
+  },
+  {
+    id: "4",
+    name: "Ergonomic Office Chair",
+    price: 1200000, // ₹12,000.00
+    description: "Comfortable ergonomic chair designed for long working hours.",
+    image:
+      "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=800&q=80",
+  },
+];
+
+app.get("/api/products", (req, res) => {
+  res.json(staticProducts);
+});
+
+app.get("/api/products/:id", (req, res) => {
+  const product = staticProducts.find((p) => p.id === req.params.id);
+  if (product) {
+    res.json(product);
+  } else {
+    res.status(404).json({ error: "Product not found" });
+  }
+});
+
 app.post("/create-checkout-session", async (req, res) => {
   try {
+    const { productId } = req.body;
+    const product = staticProducts.find((p) => p.id === productId);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
@@ -24,9 +82,11 @@ app.post("/create-checkout-session", async (req, res) => {
           price_data: {
             currency: "inr",
             product_data: {
-              name: "Stripe Test Product",
+              name: product.name,
+              images: [product.image],
+              description: product.description,
             },
-            unit_amount: 50000, // ₹500
+            unit_amount: product.price,
           },
           quantity: 1,
         },
