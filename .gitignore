@@ -1,11 +1,6 @@
 # Dependencies
 node_modules/
 
-# Environment variables
-.env
-.env.*
-!.env.example
-
 # Logs
 logs/
 *.log
@@ -28,3 +23,6 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Secrets
+.env
